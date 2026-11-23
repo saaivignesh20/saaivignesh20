@@ -8,11 +8,12 @@
 I'm the co-founder and CTO of [Deep Variance](https://www.deepvariance.com). We get more outputs from the same GPUs:
 open-source diffusion models, tuned to the hardware they run on, and the products built on top of them.
 
-|  |  |
-|---|---|
-| **[DV4](https://dv4.ai)** | Describe a video and DV4 films it: planned shot by shot, with people who speak in sync, music, on-screen text and captions. Landscape or vertical, up to 4K. |
-| **[Piku](https://piku.dv4.ai)** | Accurate, cost-effective images through one API, from tuned open-source models on DV4's inference stack. |
-| **[Inference stack](https://www.deepvariance.com/stack)** | Profiles your traffic, tunes each diffusion model to the GPU that runs it and verifies each change against the original model. On your own GPUs. |
+- **[DV4](https://dv4.ai)**: describe a video and DV4 films it: planned shot by shot, with people who speak in sync,
+  music, on-screen text and captions. Landscape or vertical, up to 4K.
+- **[Piku](https://piku.dv4.ai)**: accurate, cost-effective images through one API, from tuned open-source models on
+  DV4's inference stack.
+- **[Auto-tuning inference stack](https://www.deepvariance.com/stack)**: profiles your traffic, tunes each diffusion model
+  to the GPU that runs it and verifies each change against the original model. On your own GPUs.
 
 <sub>Deep Variance is backed by Cintrifuse Capital and Plug and Play, and is a member of NVIDIA Inception.</sub>
 
