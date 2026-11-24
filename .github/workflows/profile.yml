@@ -42,9 +42,10 @@ jobs:
             commit -qm "Render ${GITHUB_SHA::7} at $(date -u +%FT%TZ)"
           git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" output
 
-      - name: Commit the shipped list when it changed
+      - name: Commit the shipped list and release state when they changed
         run: |
-          git diff --quiet README.md && exit 0
+          git add README.md state
+          git diff --cached --quiet && exit 0
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -qm "Update the shipped list" README.md
+            commit -qm "Update the shipped list"
           git push -q

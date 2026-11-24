@@ -1,8 +1,9 @@
-"""Render the profile's live parts from GitHub's GraphQL API.
+"""Render the profile's live parts.
 
 Writes the header and stats cards (light and dark SVGs) into --out, and rewrites the
-"recently shipped" list between the shipped markers in README.md. Standard library only.
-Needs GITHUB_TOKEN (the workflow's own token is enough: everything read here is public).
+"recently shipped" list between the shipped markers in README.md: open-source work from
+GitHub's GraphQL API, closed-source releases from the products' public version pages.
+Standard library only. Needs GITHUB_TOKEN (the workflow's own token is enough).
 """
 
 import argparse
@@ -12,6 +13,7 @@ import math
 import os
 import random
 import re
+import sys
 import urllib.request
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -32,19 +34,21 @@ query($login: String!) {
     contributionsCollection {
       contributionYears
       contributionCalendar { totalContributions weeks { contributionDays { date contributionCount } } }
-    }
-    repositories(first: 10, ownerAffiliations: OWNER, privacy: PUBLIC, isFork: false,
-                 orderBy: {field: PUSHED_AT, direction: DESC}) {
-      nodes {
-        name url description isArchived
-        latestRelease { tagName url }
-        defaultBranchRef { target { ... on Commit {
-          history(first: 20) { nodes { messageHeadline committedDate url author { user { login } } } }
-        } } }
+      commitContributionsByRepository(maxRepositories: 25) {
+        repository {
+          name nameWithOwner url description isArchived isFork isPrivate owner { login }
+          latestRelease { tagName url }
+          defaultBranchRef { target { ... on Commit {
+            history(first: 30) { nodes { messageHeadline committedDate url author { user { login } } } }
+          } } }
+        }
       }
     }
   }
 }"""
+UA = {"User-Agent": "saaivignesh20-profile (+https://github.com/saaivignesh20/saaivignesh20)"}
+OPEN, CLOSED = "🔓", "🔒"
+SHIPPED_OPEN = 4
 
 
 def graphql(query, variables):
@@ -128,7 +132,7 @@ def header_svg(theme):
     labels = []
     for k in range(steps + 1):
         shown = ";".join("1" if j == k or (k == steps and j > steps) else "0" for j in range(steps + 2))
-        text = "pure noise" if k == 0 else f"denoising · step {k}/{steps}"
+        text = "pure noise" if k == 0 else f"denoising step {k} of {steps}"
         labels.append(
             f'<text x="{gx}" y="{label_y}" opacity="0">{text}<animate attributeName="opacity" values="{shown}" '
             f'keyTimes="{key_times}" calcMode="discrete" dur="7s" repeatCount="indefinite"/></text>'
@@ -136,10 +140,10 @@ def header_svg(theme):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Saai Vignesh Premanand, CTO and co-founder of Deep Variance. Building efficient diffusion inference.">
 <rect x="0.5" y="0.5" width="{w - 1}" height="{h - 1}" rx="14" fill="{t['bg']}" stroke="{t['border']}"/>
 <g font-family="{SANS}">
-<text x="56" y="92" fill="{t['accent']}" font-family="{MONO}" font-size="15" letter-spacing="2.5">CTO &amp; CO-FOUNDER · DEEP VARIANCE</text>
+<text x="56" y="92" fill="{t['accent']}" font-family="{MONO}" font-size="15" letter-spacing="2.5">CTO AND CO-FOUNDER, DEEP VARIANCE</text>
 <text x="54" y="152" fill="{t['fg']}" font-size="50" font-weight="700">Saai Vignesh Premanand</text>
 <text x="56" y="196" fill="{t['muted']}" font-size="24">Building efficient diffusion inference.</text>
-<text x="56" y="244" fill="{t['muted']}" font-family="{MONO}" font-size="15">DV4 · Piku · auto-tuning inference stack</text>
+<text x="56" y="244" fill="{t['muted']}" font-family="{MONO}" font-size="15">DV4  |  Piku  |  Overdrift</text>
 </g>
 <g>{''.join(cells)}</g>
 <g font-family="{MONO}" font-size="13" fill="{t['muted']}">{''.join(labels)}</g>
@@ -169,7 +173,7 @@ def stats_svg(theme, metrics, weeks, updated):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="GitHub activity: {', '.join(f'{v} {l}' for v, l in metrics)}">
 <rect x="0.5" y="0.5" width="{w - 1}" height="{h - 1}" rx="14" fill="{t['bg']}" stroke="{t['border']}"/>
 <g font-family="{SANS}">
-<text x="56" y="52" fill="{t['accent']}" font-family="{MONO}" font-size="14" letter-spacing="2">GITHUB ACTIVITY · PUBLIC AND PRIVATE CONTRIBUTIONS</text>
+<text x="56" y="52" fill="{t['accent']}" font-family="{MONO}" font-size="14" letter-spacing="2">GITHUB ACTIVITY, PUBLIC AND PRIVATE</text>
 <text x="{w - 56}" y="52" fill="{t['muted']}" font-family="{MONO}" font-size="13" text-anchor="end">updated {updated}</text>
 {''.join(tiles)}
 </g>
@@ -181,32 +185,87 @@ def md_escape(text):
     return re.sub(r"([\\`*_\[\]<>|])", r"\\\1", text)
 
 
-def shipped_lines(repos):
-    """Latest commit by LOGIN (not bots) in each described, unarchived public repo; newest first."""
+def fetch(url):
+    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as resp:
+        return resp.read().decode()
+
+
+def dv4_release():
+    v = json.loads(fetch("https://dv4.ai/v1/version"))
+    return f"v{v['version']}", int(v["build"])
+
+
+def piku_release():
+    found = re.search(r"Version ([\d.]+) \(build (\d+)\)", fetch("https://piku.dv4.ai/"))
+    if not found:
+        raise ValueError("piku.dv4.ai shows no version")
+    return f"v{found[1]}", int(found[2])
+
+
+# Closed-source products: name, what it is, how to read the live release.
+PRODUCTS = [
+    ("DV4", "agentic AI video platform", dv4_release),
+    ("Piku", "image generation API", piku_release),
+]
+
+
+def day_of(stamp):
+    return dt.date.fromisoformat(stamp[:10])
+
+
+def closed_picks(state_path, today):
+    """One entry per product, dated the day its current release was first seen (state kept in state_path)."""
+    state = json.loads(state_path.read_text()) if state_path.exists() else {}
+    for name, _, read in PRODUCTS:
+        try:
+            version, build = read()
+        except (OSError, ValueError, KeyError) as e:
+            print(f"{name}: release not readable, showing the last one seen ({e})", file=sys.stderr)
+            continue
+        seen = state.get(name)
+        if not seen or (seen["version"], seen["build"]) != (version, build):
+            state[name] = {"version": version, "build": build, "date": today.isoformat()}
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n")
     picks = []
-    for repo in repos:
-        if repo["isArchived"] or repo["name"] == LOGIN or not repo["description"] or not repo["defaultBranchRef"]:
+    for name, what, _ in PRODUCTS:
+        if name in state:
+            r = state[name]
+            picks.append((day_of(r["date"]), f"{CLOSED} **{name}** `{r['version']}` (build {r['build']}) | {what}"))
+    return picks
+
+
+def open_picks(contributions):
+    """Latest commit by LOGIN (not bots, not merges) in each described, unarchived public repo committed to this year."""
+    picks = []
+    for item in contributions:
+        repo = item["repository"]
+        if (repo["isPrivate"] or repo["isFork"] or repo["isArchived"] or repo["name"] == LOGIN
+                or not repo["description"] or not repo["defaultBranchRef"]):
             continue
         history = repo["defaultBranchRef"]["target"]["history"]["nodes"]
-        commit = next((c for c in history if ((c["author"] or {}).get("user") or {}).get("login") == LOGIN), None)
-        if commit:
-            picks.append((commit["committedDate"], repo, commit))
-    lines = []
-    for when, repo, commit in sorted(picks, key=lambda p: p[0], reverse=True)[:4]:
-        day = dt.datetime.fromisoformat(when.replace("Z", "+00:00")).strftime("%b %-d, %Y")
+        commit = next((c for c in history if ((c["author"] or {}).get("user") or {}).get("login") == LOGIN
+                       and not c["messageHeadline"].startswith("Merge ")), None)
+        if not commit:
+            continue
+        name = repo["name"] if repo["owner"]["login"] == LOGIN else repo["nameWithOwner"]
         release = repo["latestRelease"]
-        tag = f" · [`{release['tagName']}`]({release['url']})" if release else ""
-        lines.append(
-            f"- [**{repo['name']}**]({repo['url']}){tag} · [{md_escape(commit['messageHeadline'])}]({commit['url']})"
-            f" · {day}"
-        )
-    return lines
+        tag = f" [`{release['tagName']}`]({release['url']})" if release else ""
+        headline = f"[{md_escape(commit['messageHeadline'])}]({commit['url']})"
+        picks.append((day_of(commit["committedDate"]), f"{OPEN} [**{name}**]({repo['url']}){tag} | {headline}"))
+    return sorted(picks, key=lambda p: p[0], reverse=True)[:SHIPPED_OPEN]
+
+
+def shipped_lines(picks):
+    newest_first = sorted(picks, key=lambda p: p[0], reverse=True)
+    return [f"- {text} | {when:%b} {when.day}, {when.year}" for when, text in newest_first]
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="dist")
     ap.add_argument("--readme", default="README.md")
+    ap.add_argument("--state", default="state/releases.json")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -231,7 +290,9 @@ def main():
 
     readme = Path(args.readme)
     text = readme.read_text()
-    block = "\n".join(["<!-- shipped:start -->", *shipped_lines(user["repositories"]["nodes"]), "<!-- shipped:end -->"])
+    today = dt.datetime.now(dt.timezone.utc).date()
+    picks = open_picks(coll["commitContributionsByRepository"]) + closed_picks(Path(args.state), today)
+    block = "\n".join(["<!-- shipped:start -->", *shipped_lines(picks), "<!-- shipped:end -->"])
     new = re.sub(r"<!-- shipped:start -->.*?<!-- shipped:end -->", lambda _: block, text, flags=re.S)
     if new != text:
         readme.write_text(new)
