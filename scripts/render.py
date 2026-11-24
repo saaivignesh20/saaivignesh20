@@ -23,9 +23,9 @@ SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,
 MONO = "ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace"
 THEMES = {
     "dark": {"bg": "#0d1117", "border": "#30363d", "fg": "#e6edf3", "muted": "#8b949e",
-             "accent": "#a78bfa", "cell_lo": (109, 61, 217), "cell_hi": (196, 181, 253), "bar": "#7c5ce0"},
+             "accent": "#a78bfa", "bar": "#7c5ce0"},
     "light": {"bg": "#ffffff", "border": "#d0d7de", "fg": "#1f2328", "muted": "#59636e",
-              "accent": "#6d3dd9", "cell_lo": (109, 61, 217), "cell_hi": (167, 139, 250), "bar": "#6d3dd9"},
+              "accent": "#6d3dd9", "bar": "#6d3dd9"},
 }
 
 QUERY = """
@@ -91,25 +91,45 @@ def streaks(counts):
     return current, longest
 
 
-def mix(lo, hi, t):
-    return "#%02x%02x%02x" % tuple(round(a + (b - a) * t) for a, b in zip(lo, hi))
+# The Deep Variance mark (triangle with a node graph), sampled from the brand PNG to 28x22 cells; 0-7 is ink coverage.
+DV_MARK = [
+    "0000000000000330000000000000",
+    "0000000000002772000000000000",
+    "0000000000005766000000000000",
+    "0000000000037327300000000000",
+    "0000000000166005600000000000",
+    "0000000000472001303630000000",
+    "0000000001750000017771000000",
+    "0000000005710000006760000000",
+    "0000000027300000016410000000",
+    "0000000066000000052000000000",
+    "0000000472266200350020000000",
+    "0000001750577656610361000000",
+    "0000005710477313500175000000",
+    "0000027400621000530047200000",
+    "0000056003400000161016600000",
+    "0000373016000000067503730000",
+    "0000662673000000177710560000",
+    "0004724774000000057500174000",
+    "0017403773000000001000047200",
+    "0057100220000000000000017600",
+    "0276444444441000144555556730",
+    "0266666667750000466666666620",
+]
 
 
 def header_svg(theme):
-    """Name card with a denoising grid: noise resolves into a video frame over 8 sampler steps."""
+    """Name card with a denoising grid: noise resolves into the Deep Variance mark over 8 sampler steps."""
     t = THEMES[theme]
     w, h = 1280, 300
-    cols, rows, cell, gap = 26, 14, 13, 3
-    gx, gy = w - 56 - cols * (cell + gap) + gap, 34
+    rows, cols, cell, gap = len(DV_MARK), len(DV_MARK[0]), 8, 2
+    gx = w - 56 - cols * (cell + gap) + gap
+    gy = (h - rows * (cell + gap) - 24) // 2
     rng = random.Random(20)
 
     def target(r, c):
-        fx, fy = c / (cols - 1), r / (rows - 1)
-        frame = 0.06 <= fx <= 0.94 and 0.08 <= fy <= 0.92
-        edge = frame and (fx < 0.12 or fx > 0.88 or fy < 0.18 or fy > 0.82)
-        px, py = (fx - 0.40) / 0.30, (fy - 0.5) / 0.34  # play triangle pointing right
-        tri = 0 <= px <= 1 and abs(py) <= 1 - px
-        return 1.0 if tri else 0.55 if edge else 0.12 if frame else 0.0
+        v = int(DV_MARK[r][c])
+        return 1.0 if v >= 4 else 0.45 if v >= 2 else 0.0
 
     steps = 8
     alpha_bar = [math.cos((k / steps) * math.pi / 2) ** 2 for k in range(steps, -1, -1)]
@@ -124,13 +144,13 @@ def header_svg(theme):
                 vals.append(min(1.0, max(0.0, v)))
             vals.append(vals[-1])
             ops = ";".join(f"{0.07 + 0.93 * v:.2f}" for v in vals)
-            color = mix(t["cell_lo"], t["cell_hi"], c / (cols - 1))
+            color = t["accent"]
             cells.append(
-                f'<rect x="{gx + c * (cell + gap)}" y="{gy + r * (cell + gap)}" width="{cell}" height="{cell}" rx="2.5" '
+                f'<rect x="{gx + c * (cell + gap)}" y="{gy + r * (cell + gap)}" width="{cell}" height="{cell}" rx="1.5" '
                 f'fill="{color}"><animate attributeName="fill-opacity" values="{ops}" keyTimes="{key_times}" '
                 f'dur="7s" repeatCount="indefinite"/></rect>'
             )
-    label_y = gy + rows * (cell + gap) + 22
+    label_y = gy + rows * (cell + gap) + 18
     labels = []
     for k in range(steps + 1):
         shown = ";".join("1" if j == k or (k == steps and j > steps) else "0" for j in range(steps + 2))
