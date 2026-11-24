@@ -31,22 +31,20 @@ open-source diffusion models, tuned to the hardware they run on, and the product
 
 ### Recently shipped
 
-<sub>🔓 open source, linked to the code &nbsp;|&nbsp; 🔒 closed source</sub>
-
 <!-- shipped:start -->
-- 🔒 **DV4** `v1.10.6` (build 3707) | agentic AI video platform | Nov 24, 2026
-- 🔒 **Piku** `v1.36` (build 1162) | image generation API | Nov 24, 2026
-- 🔓 [**piku-integrations**](https://github.com/saaivignesh20/piku-integrations) | [READMEs: Piku's goal](https://github.com/saaivignesh20/piku-integrations/commit/749094cc40130400faaf5d9914acfe023a5009dc) | Nov 14, 2026
-- 🔓 [**BetterTot**](https://github.com/saaivignesh20/BetterTot) [`v0.3.4`](https://github.com/saaivignesh20/BetterTot/releases/tag/v0.3.4) | [test: align pad color expectation](https://github.com/saaivignesh20/BetterTot/commit/d03168e098147aed51e73f14d90ff94bbf5f69e0) | Aug 25, 2026
-- 🔓 [**saaivignesh20.github.io**](https://github.com/saaivignesh20/saaivignesh20.github.io) | [fix: restore github.io project routing](https://github.com/saaivignesh20/saaivignesh20.github.io/commit/c1fe46e3d6ce0870a83c875fa1b855de4097387b) | Aug 21, 2026
-- 🔓 [**deepvariance/vscode-extension**](https://github.com/deepvariance/vscode-extension) | [docs: cut the README back down](https://github.com/deepvariance/vscode-extension/commit/e2ad3297a1b1c604a682689ac39e767077ca3bee) | Jul 16, 2026
+- <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/closed.svg" alt="closed source" height="16" align="top"> **DV4** `v1.10.6` (build 3707) | agentic AI video platform | Nov 24, 2026
+- <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/closed.svg" alt="closed source" height="16" align="top"> **Piku** `v1.36` (build 1162) | image generation API | Nov 24, 2026
+- <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/oss.svg" alt="open source" height="16" align="top"> [**piku-integrations**](https://github.com/saaivignesh20/piku-integrations) | [READMEs: Piku's goal](https://github.com/saaivignesh20/piku-integrations/commit/749094cc40130400faaf5d9914acfe023a5009dc) | Nov 14, 2026
+- <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/oss.svg" alt="open source" height="16" align="top"> [**BetterTot**](https://github.com/saaivignesh20/BetterTot) [`v0.3.4`](https://github.com/saaivignesh20/BetterTot/releases/tag/v0.3.4) | [test: align pad color expectation](https://github.com/saaivignesh20/BetterTot/commit/d03168e098147aed51e73f14d90ff94bbf5f69e0) | Aug 25, 2026
+- <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/oss.svg" alt="open source" height="16" align="top"> [**saaivignesh20.github.io**](https://github.com/saaivignesh20/saaivignesh20.github.io) | [fix: restore github.io project routing](https://github.com/saaivignesh20/saaivignesh20.github.io/commit/c1fe46e3d6ce0870a83c875fa1b855de4097387b) | Aug 21, 2026
+- <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/oss.svg" alt="open source" height="16" align="top"> [**deepvariance/vscode-extension**](https://github.com/deepvariance/vscode-extension) | [docs: cut the README back down](https://github.com/deepvariance/vscode-extension/commit/e2ad3297a1b1c604a682689ac39e767077ca3bee) | Jul 16, 2026
 <!-- shipped:end -->
 
 ### Architecture and scale
 
 - **Deep Variance, CTO:** I design how DV4, Piku and Overdrift fit together, from the agent that plans a film to the GPUs
   that render it. A speed-up ships only after its output is checked against the original model's.
-- **CNS, Indiana University (2025):** production tools for the NIH Human Reference Atlas in Angular, TypeScript and
+- **[CNS, Indiana University](https://cns.iu.edu/people/saai-vignesh-premanand) (2025):** production tools for the NIH Human Reference Atlas in Angular, TypeScript and
   Node.js, with SonarQube, Jest and Storybook; contributor to [hra-ui](https://github.com/hubmapconsortium/hra-ui).
 - **StellarLogix (2024):** designed RSquare, a serverless IoT platform on AWS IoT Core and Lambda. Devices switch between
   CoAP, MQTT and REST to save battery on LTE; the design was proven in proofs of concept and written up as the reference

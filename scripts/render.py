@@ -47,7 +47,9 @@ query($login: String!) {
   }
 }"""
 UA = {"User-Agent": "saaivignesh20-profile (+https://github.com/saaivignesh20/saaivignesh20)"}
-OPEN, CLOSED = "🔓", "🔒"
+ASSETS = "https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets"
+OPEN = f'<img src="{ASSETS}/oss.svg" alt="open source" height="16" align="top">'
+CLOSED = f'<img src="{ASSETS}/closed.svg" alt="closed source" height="16" align="top">'
 SHIPPED_OPEN = 4
 
 
