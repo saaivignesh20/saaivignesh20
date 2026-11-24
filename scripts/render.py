@@ -48,8 +48,8 @@ query($login: String!) {
 }"""
 UA = {"User-Agent": "saaivignesh20-profile (+https://github.com/saaivignesh20/saaivignesh20)"}
 ASSETS = "https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets"
-OPEN = f'<img src="{ASSETS}/oss.svg" alt="open source" height="16" align="top">'
-CLOSED = f'<img src="{ASSETS}/closed.svg" alt="closed source" height="16" align="top">'
+OPEN = f'<img src="{ASSETS}/oss.svg" alt="open source" title="Open source" width="16" height="16">'
+CLOSED = f'<img src="{ASSETS}/closed.svg" alt="closed source" title="Closed source" width="16" height="16">'
 SHIPPED_OPEN = 4
 
 
@@ -233,7 +233,7 @@ def closed_picks(state_path, today):
     for name, what, _ in PRODUCTS:
         if name in state:
             r = state[name]
-            picks.append((day_of(r["date"]), f"{CLOSED} **{name}** `{r['version']}` (build {r['build']}) | {what}"))
+            picks.append((day_of(r["date"]), CLOSED, f"**{name}**", f"`{r['version']}` build {r['build']}, {what}"))
     return picks
 
 
@@ -254,13 +254,15 @@ def open_picks(contributions):
         release = repo["latestRelease"]
         tag = f" [`{release['tagName']}`]({release['url']})" if release else ""
         headline = f"[{md_escape(commit['messageHeadline'])}]({commit['url']})"
-        picks.append((day_of(commit["committedDate"]), f"{OPEN} [**{name}**]({repo['url']}){tag} | {headline}"))
+        picks.append((day_of(commit["committedDate"]), OPEN, f"[**{name}**]({repo['url']})", f"{tag.strip()} {headline}".strip()))
     return sorted(picks, key=lambda p: p[0], reverse=True)[:SHIPPED_OPEN]
 
 
 def shipped_lines(picks):
-    newest_first = sorted(picks, key=lambda p: p[0], reverse=True)
-    return [f"- {text} | {when:%b} {when.day}, {when.year}" for when, text in newest_first]
+    rows = ["| | Project | Shipped | Date |", "|:-:|---|---|---|"]
+    for when, icon, project, shipped in sorted(picks, key=lambda p: p[0], reverse=True):
+        rows.append(f"| {icon} | {project} | {shipped} | {when:%b} {when.day}, {when.year} |")
+    return rows
 
 
 def main():
