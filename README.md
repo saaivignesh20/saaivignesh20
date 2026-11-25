@@ -34,7 +34,7 @@ open-source diffusion models, tuned to the hardware they run on, and the product
 <!-- shipped:start -->
 | | Project | Shipped | Date |
 |:-:|---|---|---|
-| <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/lock.svg" alt="closed source" title="Closed source" width="16" height="16"> | **Piku** | `v1.39` build 1165, image generation API | Nov 25, 2026 |
+| <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/lock.svg" alt="closed source" title="Closed source" width="16" height="16"> | **Piku** | `v1.40` build 1166, image generation API | Nov 25, 2026 |
 | <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/lock.svg" alt="closed source" title="Closed source" width="16" height="16"> | **DV4** | `v1.10.6` build 3707, agentic AI video platform | Nov 24, 2026 |
 | <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/code.svg" alt="open source" title="Open source" width="16" height="16"> | [**piku-integrations**](https://github.com/saaivignesh20/piku-integrations) | [READMEs: Piku's goal](https://github.com/saaivignesh20/piku-integrations/commit/749094cc40130400faaf5d9914acfe023a5009dc) | Nov 14, 2026 |
 | <img src="https://raw.githubusercontent.com/saaivignesh20/saaivignesh20/main/assets/code.svg" alt="open source" title="Open source" width="16" height="16"> | [**BetterTot**](https://github.com/saaivignesh20/BetterTot) | [`v0.3.4`](https://github.com/saaivignesh20/BetterTot/releases/tag/v0.3.4) [test: align pad color expectation](https://github.com/saaivignesh20/BetterTot/commit/d03168e098147aed51e73f14d90ff94bbf5f69e0) | Aug 25, 2026 |
